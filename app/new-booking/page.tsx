@@ -23,6 +23,7 @@ function NewBookingPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>(timeSlots);
+  const isAdmin = user?.role === 'admin';
   
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -33,6 +34,8 @@ function NewBookingPage() {
     booking_date: '',
     booking_time: '',
     booking_notes: '',
+    // Store user_id to track booking ownership
+    user_id: '',
   });
 
   // Populate form with user data if available
@@ -43,6 +46,7 @@ function NewBookingPage() {
         customer_name: user.name || prev.customer_name,
         customer_email: user.email || prev.customer_email,
         customer_phone: user.phone || prev.customer_phone,
+        user_id: user.id, // Set the user_id for booking ownership
       }));
     }
   }, [user]);
@@ -83,6 +87,12 @@ function NewBookingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast.error('You must be logged in to create a booking');
+      router.push('/login');
+      return;
+    }
     
     setLoading(true);
     try {

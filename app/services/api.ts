@@ -66,7 +66,7 @@ api.interceptors.response.use(
 // Authentication service
 export const authService = {
   // Register new user
-  register: async (userData: { name: string; email: string; password: string }) => {
+  register: async (userData: { name: string; email: string; password: string; role?: string }) => {
     try {
       const response = await api.post('/auth/register', userData);
       if (response.data.token) {
@@ -144,11 +144,21 @@ const withRetry = async (apiCall: () => Promise<any>, retries = 2, delay = 1000)
 
 // Bookings service
 export const bookingsService = {
-  // Get all bookings
+  // Get all bookings for current user
   getAllBookings: async () => {
     return withRetry(async () => {
       const response = await api.get('/bookings');
-      return response.data;
+      console.log('Bookings response:', response.data); // Debugging line
+      return response.data; // Return the data directly
+    });
+  },
+
+  // Get all bookings (admin only)
+  getAllBookingsAdmin: async () => {
+    return withRetry(async () => {
+      const response = await api.get('/bookings');
+      console.log('Admin bookings response:', response.data); // Debugging line
+      return response.data; // Return the data directly
     });
   },
 
@@ -176,12 +186,91 @@ export const bookingsService = {
     });
   },
 
+  // Admin: Update booking status (uses the admin endpoint)
+  adminUpdateBookingStatus: async (id: string, status: string) => {
+    return withRetry(async () => {
+      const response = await api.patch(`/admin/bookings/${id}/status`, { status });
+      return response.data;
+    });
+  },
+
+  // Delete booking (admin only)
+  deleteBooking: async (id: string) => {
+    return withRetry(async () => {
+      const response = await api.delete(`/bookings/${id}`);
+      return response.data;
+    });
+  },
+
   // Get available timeslots
   getAvailableTimeslots: async (date: string) => {
     return withRetry(async () => {
       const response = await api.get(`/bookings/timeslots?date=${date}`);
       return response.data;
     });
+  }
+};
+
+// Users admin service
+export const usersAdminService = {
+  // Get all users (admin only)
+  getAllUsers: async () => {
+    return withRetry(async () => {
+      const response = await api.get('/admin/users/all');
+      console.log('Original API Response:', response.data);
+      
+      // Transform the data to ensure all users have an _id field
+      let transformedData;
+      
+      if (response.data && response.data.data && Array.isArray(response.data.data)) {
+        // If response has a data property containing the array
+        transformedData = response.data.data.map((user: any) => ({
+          ...user,
+          _id: user._id || user.id || `temp-${Math.random().toString(36).substr(2, 9)}`
+        }));
+        console.log('Transformed from response.data.data:', transformedData);
+        return transformedData;
+      } else if (response.data && Array.isArray(response.data)) {
+        // If response data is directly the array
+        transformedData = response.data.map((user: any) => ({
+          ...user,
+          _id: user._id || user.id || `temp-${Math.random().toString(36).substr(2, 9)}`
+        }));
+        console.log('Transformed from response.data array:', transformedData);
+        return transformedData;
+      }
+      
+      return response.data;
+    });
+  },
+  
+  // Delete a user (admin only)
+  deleteUser: async (userId: string) => {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    console.log('Delete user API call with ID:', userId);
+    
+    // Use direct axios call to bypass any potential interceptor issues
+    const token = Cookies.get('auth_token');
+    const url = `${API_BASE_URL}/admin/users/delete/${userId}`;
+    
+    console.log('Making DELETE request to:', url);
+    
+    try {
+      const response = await axios.delete(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Delete successful:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in deleteUser:', error);
+      throw error;
+    }
   }
 };
 

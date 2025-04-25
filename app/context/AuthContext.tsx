@@ -94,7 +94,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const register = async (name: string, email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await authService.register({ name, email, password });
+      // Always register as a regular user, not an admin
+      const userData = { 
+        name, 
+        email, 
+        password,
+        role: 'user' // Explicitly set role to user
+      };
+      
+      const response = await authService.register(userData);
       setUser(response.data.user);
       toast.success('Registration successful!');
       router.push('/dashboard');
