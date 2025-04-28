@@ -232,7 +232,6 @@ export const usersAdminService = {
           ...user,
           _id: user._id || user.id || `temp-${Math.random().toString(36).substr(2, 9)}`
         }));
-        console.log('Transformed from response.data array:', transformedData);
         return transformedData;
       }
       
@@ -251,7 +250,6 @@ export const usersAdminService = {
     const token = Cookies.get('auth_token');
     const url = `${API_BASE_URL}/admin/users/delete/${userId}`;
     
-    console.log('Making DELETE request to:', url);
     
     try {
       const response = await axios.delete(url, {
@@ -260,7 +258,6 @@ export const usersAdminService = {
           'Content-Type': 'application/json'
         }
       });
-      console.log('Delete successful:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error in deleteUser:', error);
