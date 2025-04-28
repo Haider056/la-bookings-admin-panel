@@ -148,7 +148,6 @@ export const bookingsService = {
   getAllBookings: async () => {
     return withRetry(async () => {
       const response = await api.get('/bookings');
-      console.log('Bookings response:', response.data); // Debugging line
       return response.data; // Return the data directly
     });
   },
@@ -157,7 +156,6 @@ export const bookingsService = {
   getAllBookingsAdmin: async () => {
     return withRetry(async () => {
       const response = await api.get('/bookings');
-      console.log('Admin bookings response:', response.data); // Debugging line
       return response.data; // Return the data directly
     });
   },
@@ -217,7 +215,6 @@ export const usersAdminService = {
   getAllUsers: async () => {
     return withRetry(async () => {
       const response = await api.get('/admin/users/all');
-      console.log('Original API Response:', response.data);
       
       // Transform the data to ensure all users have an _id field
       let transformedData;
@@ -228,7 +225,6 @@ export const usersAdminService = {
           ...user,
           _id: user._id || user.id || `temp-${Math.random().toString(36).substr(2, 9)}`
         }));
-        console.log('Transformed from response.data.data:', transformedData);
         return transformedData;
       } else if (response.data && Array.isArray(response.data)) {
         // If response data is directly the array
@@ -250,7 +246,6 @@ export const usersAdminService = {
       throw new Error('User ID is required');
     }
     
-    console.log('Delete user API call with ID:', userId);
     
     // Use direct axios call to bypass any potential interceptor issues
     const token = Cookies.get('auth_token');

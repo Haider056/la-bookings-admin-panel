@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import Link from 'next/link';
-import Image from 'next/image';
-
 type LoginFormData = {
   email: string;
   password: string;

@@ -51,7 +51,6 @@ function ProfilePage() {
       try {
         setLoadingUsers(true);
         const response = await usersAdminService.getAllUsers();
-        console.log('Raw API Response:', JSON.stringify(response));
         
         let processedUsers: User[] = [];
         
